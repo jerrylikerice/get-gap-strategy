@@ -1,0 +1,58 @@
+#coding=utf-8
+
+
+
+def getAllPeriod(lowestPrice,highestPrice,spread,infos):
+	AllPeriod=[]
+	startPrice=lowestPrice
+	while startPrice<highestPrice:
+		endPrice=startPrice*(1+0.25)
+		AllPeriod+=getAdjustPeriod(infos,startPrice,endPrice)
+		
+		startPrice+=spread
+	return AllPeriod
+	
+def getAdjustPeriod(infos,startPrice,endPrice):
+	bits=[0 for i in range(len(infos))]
+	for i in range(len(bits)):
+		high=infos[i][2]
+		low=infos[i][3]
+		if (high>endPrice and low<endPrice) or (high>startPrice and high<startPrice) or (high<endPrice and low>startPrice):
+			bits[i]=1
+	
+	AdjustPeriod=[]
+	#计算bits中连续长度符合要求者
+	start=0
+	end=0
+	length=0
+	lenThre=30
+	
+	for i in range(len(bits)):
+		if bits[i]==1:
+			if start==0:
+				start=i
+			length+=1
+		else:
+			if length>0:
+				end=start+length
+				AdjustPeriod.append((start,end))
+				start=0
+				end=0
+				length=0
+	return AdjustPeriod
+	
+def main():
+	ff=open('recode.txt','w')
+	flog=open('log.txt','w')
+	
+	infos=readList('SZ000004.TXT')
+	
+	highs=map(lambda x:x[2],infos)
+	lows=map(lambda x:x[3],infos) 
+
+	highestPrice=max(highs)
+	lowestPrice=min(lows)
+	spread=0.2
+	
+	periods=getAllPeriod(lowestPrice,highestPrice,spread,infos)
+	print periods
